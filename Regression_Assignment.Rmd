@@ -111,7 +111,7 @@ mtcars_subset %>%
 ## Residual Plot for the best model
 ```{r residual_plot}
 fit_1 <- lm(mpg~wt+factor(cyl),data=mtcars)
-par(mfrow = c(2,2))
-plot(fit_1)
+residPlot <- ggplot(aes(x=.fitted, y=.resid), data=fit_1) + geom_point() + geom_hline(yintercept=0)+labs(x="Fitted Values", y="Residual")
+residPlot
 ```
 
