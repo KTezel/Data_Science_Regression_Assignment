@@ -1,0 +1,117 @@
+---
+title: "Interaction Between Transmission Type and MPG"
+author: "KTezel"
+date: "12/19/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Executive Summary
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Motor Trend is a magazine about the automobile industry. It is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome), particularly:
+
+  “Is an automatic or manual transmission better for MPG”
+  “Quantify the MPG difference between automatic and manual transmissions”
+
+From the dataset, it is clear that there is a significant difference between the average mpg per automatic and manual transmission. To show the differences between average mpg per transmission type, a boxplot method is used to show the differences between median mpgs. Then, hypothesis testing, specifically, T-test is used to see whether the difference between the differences in means are significant or not. According to the T-test, differences were significant and that the mpg for automatic cars were higher than that of the cars with manual transmission.
+
+# Libraries
+```{r libraries}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+# Getting the Data
+```{r data}
+data(mtcars)
+```
+
+# Data Preprocessing
+```{r preprocess}
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$vs <- as.factor(mtcars$vs)
+mtcars$am <- factor(mtcars$am)
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+```
+# Exploratory Data Analysis
+## Looking at data briefly
+```{r head}
+head(mtcars)
+```
+
+```{r dimensions}
+dim(mtcars)
+```
+
+## Looking for missing data
+There is no missing data.
+```{r missing data}
+colSums(is.na(mtcars))
+```
+
+## Plotting MPG and Automatic Transmission (1 = Yes, 2 = No)
+From the plot graph, it looks like when the transmission is automatic, MPG increases.
+Below is the boxplot graph. It can be clearly seen that the median MPG is higher for the cars with automatic transmission. 
+
+```{r boxplot}
+p2 <- ggplot(data = mtcars, aes(factor(am),mpg)) + geom_boxplot() + labs(x= "Transmission", y = "MPG", title = "MPG: AT vs MT")
+p2
+```
+
+# Inference
+## Are the differences in mean mpg between automatic and manual is significant? Let's use T-test to verify.
+
+```{r t-test}
+t.test(mpg ~ am, data = mtcars)
+```
+P-value from the t-test is very small which suggest that our null hypothesis is false, hence suggesting that the difference in mean mpg between automatic and manual is pretty significant.
+
+# Regression Analysis
+## Checking to see the relationship between MPG and Transmission
+### Linear Regression
+```{r lin_am}
+fit_lm <- lm(mpg ~ am, data=mtcars)
+summary(fit_lm)
+```
+Linear regression model predicts that when the car is automatic, it increases the mpg by approximately 7 miles. 
+Intercept and the coefficients  are significant and the variables explain approximately 36% (R-squared 0.3598) of the variation in MPG which is not a good model since 35% R-squared value is not good enough.
+
+## Other Regression Models
+Below are some other models that has some higher R-squared ratio. For the purposes of this report, only the R-squared values will be extracted from the report.
+```{r lm_final}
+summary(lm(mpg~wt*factor(cyl),data=mtcars))$r.squared
+summary(lm(mpg~wt+factor(cyl),data=mtcars))$r.squared
+```
+
+# Appendix
+```{r plot_all_variables}
+ggplot(mtcars, aes(x=wt, cyl, drat, y=mpg, group=am, color=am, height=3, width=3)) + geom_point() +  
+scale_colour_discrete(labels=c("Automatic", "Manual")) + 
+xlab("weight") + ggtitle("Scatter Plot of MPG vs. Weight by Transmission")
+```
+
+```{r subset}
+mtcars_subset <- subset(mtcars, select = c(mpg, cyl, wt, drat, am))
+```
+
+```{r ggplot}
+mtcars_subset %>%
+    gather(-mpg, -am, -cyl, key="var", value = "value") %>%
+    ggplot(aes(x = value, y = mpg, color = am, shape = factor(cyl))) +
+    geom_point() +
+    facet_wrap(~ var, scales = "free") +
+    theme_bw()
+```
+
+## Residual Plot for the best model
+```{r residual_plot}
+fit_1 <- lm(mpg~wt+factor(cyl),data=mtcars)
+par(mfrow = c(2,2))
+plot(fit_1)
+```
+
