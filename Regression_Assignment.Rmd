@@ -3,8 +3,8 @@ title: "Interaction Between Transmission Type and MPG"
 author: "KTezel"
 date: "12/19/2020"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 # Executive Summary
